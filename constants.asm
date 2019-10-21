@@ -6,6 +6,3 @@
 ; Defines important constants for use across the entire project
 
 BASE_ADDRESS = $3F000000
-
-SCREEN_WIDTH = 64
-SCREEN_HEIGHT = 64

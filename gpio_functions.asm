@@ -195,23 +195,23 @@ PUSH { lr }
 POP { pc }
 
 ; Stores the pin numbers of the LEDs, mapped to indices 0-3
-align 2
+align 4
 GPIO_LED_PINS:
 db 18, 17, 27, 22
 
 ; Stores the pin numbers of the buttons, indices 0-1
-align 2
+align 4
 GPIO_BUTTON_PINS:
 db 23, 24
 
 ; Stores the current state of the buttons, indices 0-1
 ; Use to detect if a button is pressed, held or released
-align 2
+align 4
 GPIO_BUTTON_CURR_STATE:
 db 0, 0
 
 ; Stores the previous state of the buttons, indices 0-1
 ; Use to detect if a button is pressed, held or released
-align 2
+align 4
 GPIO_BUTTON_PREV_STATE:
 db 0, 0
