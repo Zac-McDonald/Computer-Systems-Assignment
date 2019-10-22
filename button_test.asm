@@ -1,5 +1,6 @@
 BASE = $3F000000
-mov sp, $1000
+;org $0000
+;mov sp, $1000
 
 mov r0, BASE
 bl GPIO_Setup	; Setup LEDs for writing

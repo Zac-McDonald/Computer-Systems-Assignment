@@ -17,3 +17,43 @@ PUSH { lr }
 	mov r0, #0					; If the GPIO is low, we will return 0
 	movne r0, #1				; If the GPIO is high, we will return 1
 POP { pc }
+
+dd 640		; Physical Width
+dd 480		; Physical Height
+Screen_Width:
+dd 640		; Virtual Width
+Screen_Height:
+dd 480		; Virtual Height
+dd 0		; GPU - Pitch (number of pixels per row)
+dd 16		; Bit Depth
+dd 0		; X Offset
+dd 0		; Y Offset
+Frame_Buffer_Pointer:
+dd 0		; GPU - Frame Buffer Pointer
+dd 0		; GPU - Frame Buffer Size
+
+Graphics_Setup:
+; Sets up the needed graphics functionality
+; returns r0 = address of frame buffer info (or zero on failure)
+; params r0 = BASE ADDRESS
+PUSH { lr }
+	; Send frame buffer info to mailbox
+	PUSH { r0 }					; Save the BASE ADDRESS for later
+	mov r1, #8					; Set mailbox channel to 8
+	adr r2, Frame_Buffer_Info
+	;add r2, $40000000			; Setup message
+	bl Mailbox_Send
+
+	; Receive the frame buffer pointer
+	POP { r0 }					; Recall the BASE ADDRESS
+	mov r1, #8					; Set the mailbox channel to 8
+	bl Mailbox_Receive
+
+	; Check that the GPU accepted our settings
+	teq r0, #0					; if 0, we succeeded
+	movne r0, #0				; Set the pointer to zero
+	POPne { pc }				; Return from the function early
+
+	; Return the frame buffer address so we know we succeeded
+	adr r0, Frame_Buffer_Info
+POP { pc }
