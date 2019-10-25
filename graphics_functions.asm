@@ -23,7 +23,7 @@ Graphics_Setup:
 PUSH { lr }
 	Graphics_Setup_Retry:
 	; Send frame buffer info to mailbox
-	;PUSH { r0 }					; Save the BASE ADDRESS for later
+	PUSH { r0 }					; Save the BASE ADDRESS for later
 	mov r1, #8					; Set mailbox channel to 8
 	mov r2, Frame_Buffer_Info and $FF
 	orr r2, Frame_Buffer_Info and $FF00
@@ -32,10 +32,10 @@ PUSH { lr }
 	;add r2, $40000000			; Setup message
 	bl Mailbox_Send
 
-	;; Receive the frame buffer pointer
-	;POP { r0 }					; Recall the BASE ADDRESS
-	;mov r1, #8					; Set the mailbox channel to 8
-	;bl Mailbox_Receive
+	; Receive the frame buffer pointer
+	POP { r0 }					; Recall the BASE ADDRESS
+	mov r1, #8					; Set the mailbox channel to 8
+	bl Mailbox_Receive
 
 	;; Check that the GPU accepted our settings
 	;teq r0, #0					; if 0, we succeeded
@@ -104,11 +104,31 @@ PUSH { lr }
 	mov r3, SCREEN_WIDTH		; Get the screen width
 	mla r1, r2, r3, r1			; Make r1 the index = x + width * y
 	lsl r1, #1					; Multiply r1 by the screen depth (bytes)
-	;mov r2, #3
-	;mul r1, r2
 
 	ldr r2, [Frame_Buffer_Pointer]
 	strh r0, [r2, r1]			; Write the colour to the correct location
+POP { pc }
+
+ClearScreen:
+; Clears all the colours (sets to black) of the frame buffer
+PUSH { lr }
+	mov r0, $0000				; Colour to set (black)
+	mov r1, #0					; X-coord - we will only increment this (acts as i if y = 0)
+
+	mov r3, SCREEN_WIDTH
+	mov r2, SCREEN_HEIGHT
+	mul r3, r2					; Get the total number of pixels
+
+	mov r2, #0					; Y-coord - will remain as zero
+
+	ClearScreen_Loop:
+		PUSH { r0-r3 }
+		bl DrawPixel			; Draw the desired pixel
+		POP { r0-r3 }
+
+		add r1, #1				; Increment the current pixel
+		cmp r1, r3 				; Check if we need to keep looping
+	bne ClearScreen_Loop
 POP { pc }
 
 ; Stores all the needed information about the frame buffer

@@ -62,8 +62,8 @@ PUSH { lr }
 	mov r1, #1
 	lsl r1, r2				; Set the n-th bit to high, rest low (n = pin)
 
-	ldr r2, [r0, #40]		; Load the current register (needed if processing is really fast)
-	orr r1, r2				; Add our change
+	;ldr r2, [r0, #40]		; Load the current register (needed if processing is really fast)
+	;orr r1, r2				; Add our change
 	str r1, [r0, #40]		; Set GPIO # to off
 POP { pc }
 
@@ -79,8 +79,8 @@ PUSH { lr }
 	mov r1, #1
 	lsl r1, r2				; Set the n-th bit to high, rest low (n = pin)
 
-	ldr r2, [r0, #28]		; Load the current register (needed if processing is really fast)
-	orr r1, r2				; Add our change
+	;ldr r2, [r0, #28]		; Load the current register (needed if processing is really fast)
+	;orr r1, r2				; Add our change
 	str r1, [r0, #28]		; Set GPIO # to on
 POP { pc }
 
