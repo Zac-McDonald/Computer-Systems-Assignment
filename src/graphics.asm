@@ -3,7 +3,7 @@
 ; Project: Atari 2600 style game
 
 ; graphics.asm
-; Contains all the graphics structures used in the game
+; Contains all the graphics structures used in the game as well as their draw functions.
 
 ; Sprites are of a fixed size, drawn from the top left corner. Each sprite can use 3 colours from a set palette (based on the PICO-8 palette). This means that each pixel is represented by 2 bits: 0 being no colour, and 1-3 being the chosed colours. The colours are chosen at the start of the sprite definition. There are 16 possible colours, so 3 nibbles are needed to represent the 3 chosen colours
 
@@ -15,7 +15,10 @@ DrawSprite:
 ; params r0 = sprite address (i.e. adr r0, Sprite_Char_Idle_0)
 ; params r1 = x coordinate
 ; params r2 = y coordinate
+; params r3 = face direction, 0 = normal, 1 = flipped
 PUSH { lr, r4-r9 }
+	mov r9, r3 							; Save the direction for later
+
 	; Load the sprites colours into our CURRENT_SPRITE_COLOURS array
 	ldrh r3, [r0, #0]
 	adr r4, CURRENT_SPRITE_COLOURS 		; Get the current colours palette
@@ -76,7 +79,12 @@ PUSH { lr, r4-r9 }
 
 			PUSH { r0-r3 }
 			ldrh r0, [r4, r6]				; Load the correct colour into r0
-			add r1, r5						; Get the x coordinate
+
+			cmp r9, #0						; Check if we need to flip the image
+			addeq r1, r5					; Get the x coordinate (not flipped)
+			addne r1, #16					; Get the x coordinate (flipped)
+			subne r1, r5
+
 			add r2, r7						; Get the y coordinate
 			bl DrawPixel
 			POP { r0-r3 }

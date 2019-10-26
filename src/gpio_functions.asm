@@ -50,6 +50,16 @@ PUSH { lr }
 	ble pauseloop$
 POP { pc }
 
+GetTime:
+; Gets the total time elapsed - for use outside (namely for animation)
+; returns r0 = current time elapsed
+; params r0 = BASE ADDRESS
+PUSH { lr }
+	orr r0, TIMER_OFFSET
+	ldr r3, [r0, #4]
+	mov r0, r3
+POP { pc }
+
 TurnOffLED:
 ; Turns off LED on GPIO
 ; params r0 = BASE ADDRESS
@@ -197,6 +207,32 @@ PUSH { lr }
 
 	GetButtonUp_Finish:
 POP { pc }
+
+GetButtonState:
+; Calls the other button functions and returns a value indicating the buttons state.
+; Note that the result is a number, not a mask, therefore pressed and held are mutually exclusive.
+; returns r0 = state: 0 = up, 1 = held, 2 = pressed, 3 = released
+; params r0 = Button number [0,1]
+PUSH { lr, r4-r5 }
+	mov r4, r0						; Save the button number
+	mov r5, #0						; Store the current return value
+
+	bl GetButton 					; Check the held state
+	cmp r0, #1
+	moveq r5, #1					; Set return value accordingly
+
+	mov r0, r4 						; Recall button number
+	bl GetButtonDown 				; Check the pressed state
+	cmp r0, #1
+	moveq r5, #2					; Set return value accordingly
+
+	mov r0, r4 						; Recall button number
+	bl GetButtonUp 					; Check the released state
+	cmp r0, #1
+	moveq r5, #3					; Set return value accordingly
+
+	mov r0, r5 						; Return r5 (state value)
+POP { pc, r4-r5 }
 
 ; Stores the pin numbers of the LEDs, mapped to indices 0-3
 align 4
