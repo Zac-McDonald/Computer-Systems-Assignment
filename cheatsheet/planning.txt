@@ -39,7 +39,7 @@ comparisons:
 -cmn
 -teq
 -tst
-conditional suffix
+-conditional suffix
 
 Branching:
 -b
