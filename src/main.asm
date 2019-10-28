@@ -49,6 +49,13 @@ main_loop:
 	mov r1, #1
 	bl SetLED				; Make the second LED show the state of button 1
 
+	mov r0, #1
+	bl GetButtonDown
+	mov r2, r0
+	mov r0, BASE_ADDRESS
+	mov r1, #2
+	bl SetLED				; Make the second LED show the state of button 1
+
 	bl PlayerUpdate
 
 	bl Tick					; Wait for a time before the next frame calculations

@@ -21,14 +21,14 @@ PUSH { lr, r4-r6 }
 
 	; If both buttons just pressed and we are grounded (interact)
 	PlayerUpdate_Check_Interact:
-	ldrb r1, [r0, #2]
-	cmp r1, #0
-	cmpeq r4, #2
-	cmpeq r5, #2
+	ldrb r1, [r0, #2]										; Load grounded value
+	cmp r1, #1												; Check that player is grounded
+	cmpeq r4, #2											; Check right button held
+	cmpeq r5, #2											; Check left button held
 	bne PlayerUpdate_Check_Move_Right
 	; Call interact if equal flag is set
 
-	b PlayerUpdate_End_State_Checks:
+	b PlayerUpdate_End_State_Checks
 
 	; If one button held, run in that direction and set the facing direction
 	; Check movement right
@@ -43,9 +43,11 @@ PUSH { lr, r4-r6 }
 	ldrb r2, [r0, #5]										; Load the speed
 	add r1, r2
 	strb r1, [r0, #0]										; x = x + speed
-	mov r1, #1												; Set state to running
-	strb r1, [r0, #4]
-	b PlayerUpdate_End_State_Checks:
+	ldrb r1, [r0, #2]
+	cmp r1, #1												; Check if grounded
+	moveq r1, #1											; Set state to running if not jumping
+	strbeq r1, [r0, #4]
+	b PlayerUpdate_Check_Jump
 
 	; Check movement left
 	PlayerUpdate_Check_Move_Left:
@@ -59,9 +61,11 @@ PUSH { lr, r4-r6 }
 	ldrb r2, [r0, #5]										; Load the speed
 	sub r1, r2
 	strb r1, [r0, #0]										; x = x - speed
-	mov r1, #1												; Set state to running
-	strb r1, [r0, #4]
-	b PlayerUpdate_End_State_Checks:
+	ldrb r1, [r0, #2]
+	cmp r1, #1												; Check if grounded
+	moveq r1, #1											; Set state to running if not jumping
+	strbeq r1, [r0, #4]
+	b PlayerUpdate_Check_Jump
 
 	; If one button held and the other is pressed, initiate jump
 	PlayerUpdate_Check_Jump:
@@ -76,8 +80,31 @@ PUSH { lr, r4-r6 }
 	strb r1, [r0, #2]
 	mov r1, #2												; Set state to jumping
 	strb r1, [r0, #4]
+
+	; Check if the state has changed
+	ldrb r1, [r0, #4]
+	cmp r1, r6
+	movne r1, #0											; If state has changed reset the frame counter
+	strbne r1, [r0, #6]
+
+	ldrb r1, [r0, #6]										; Load the frame counter
+	ldrb r2, [r0, #1]										; Load the y coordinate
+	cmp r1, #6												; If frame counter < 6, move up
+	lslls r1, #2
+	addls r2, r1, #60
+	strbls r2, [r0, #1]
+
+	; If frame counter > 6, move down
+
+	; If frame counter > 12, set grounded
+	ldrb r1, [r0, #6]
+	cmp r1, #12
+	movgt r1, #0												; Set grounded to true
+	strbgt r1, [r0, #2]
+
+	cmp r1, #2
 	PlayerUpdate_Check_Jump_End:							; If no buttons pressed, we branch to here
-	b PlayerUpdate_End_State_Checks:
+	b PlayerUpdate_End_State_Checks
 
 	PlayerUpdate_End_State_Checks:
 
@@ -87,22 +114,16 @@ PUSH { lr, r4-r6 }
 	moveq r1, #0
 	strbeq r1, [r0, #4]
 
-	; Check if the state has changed
-	ldrb r1, [r0, #4]
-	cmp r1, r6
-	movne r1, #0											; If state has changed reset the frame counter
-	strb r1, [r0, #6]
-
 	; Clamp the x coordinate
 	ldrb r1, [r0, #0]
 
-	cmp r1, #0
-	movls r1, #0
+	cmp r1, #0												; Check if x < 0 (left side)
+	movlt r1, #0
 
-	cmp r1, SCREEN_WIDTH - 16
+	cmp r1, SCREEN_WIDTH - 16								; Check if x > SCREEN_WIDTH - 16 (right side)
 	movgt r1, SCREEN_WIDTH - 16
 
-	strb r1, [r0, #0]
+	strb r1, [r0, #0]										; Update the x coordinate
 POP { pc, r4-r6 }
 
 PlayerDraw:
@@ -158,7 +179,10 @@ PUSH { lr, r4-r5 }
 	PlayerGetFrame_Jump:
 	cmp r1, #2								; Check jump state
 	bne PlayerGetFrame_Swing
-	;
+	ldrb r5, [r0, #6]
+	mov r4, #32								; Default to the in-air sprite
+	cmp r5, #2
+	movls r4, #28							; If frame counter less than 2 - set pre-jump sprite
 	b PlayerGetFrame_End
 
 	PlayerGetFrame_Swing:
