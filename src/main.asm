@@ -8,7 +8,11 @@
 ; Note: Program follows the Application Binary Interface standard
 ;		i.e. r0-r3 are volatile (modified by functions) while r4-r12 will not be altered by functions
 
+align 4
 include "constants.asm"
+
+org $0000
+mov sp, $8000				; Initialise the stack pointer
 
 mov r0, BASE_ADDRESS
 bl GPIO_Setup				; Setup GPIO pins for relavent inputs and outputs

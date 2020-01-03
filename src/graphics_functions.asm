@@ -42,12 +42,11 @@ PUSH { lr }
 	;movne r0, #0				; Set the pointer to zero
 	;POPne { pc }				; Return from the function early
 
-	ldr r1, [Frame_Buffer_Pointer]
-	teq r1, #0
+	ldr r0, [Frame_Buffer_Pointer]
+	teq r0, #0
 	beq Graphics_Setup_Retry
 
 	; Return the frame buffer address so we know we succeeded
-	mov r0, r1
 	and r0, $3FFFFFFF
 	str r0, [Frame_Buffer_Pointer]
 POP { pc }
@@ -164,24 +163,12 @@ dw 0
 Frame_Buffer_Offset_Y:
 dw 0
 
-;dw Set_Palette
-;dw $00000010
-;dw $00000010
-;dw 0
-;dw 2
-;dw $00000000, $FFFFFFFF
-
-;dw $00038002 ;Set_Clock_Rate ; Tag Identifier
-;dw $0000000C ; Value Buffer Size In Bytes
-;dw $00000008 ; 1 bit (MSB) Request/Response Indicator (0=Request, 1=Response), 31 bits (LSB) Value Length In Bytes
-;dw $3 ;$5 ; Value Buffer (V3D Clock ID)
-;dw 1200000 ;250*1000*1000 ; Value Buffer (250MHz)
-;dw $00000000
-;
-;dw $00030012 ; Enable_QPU ; Tag Identifier
-;dw $00000004 ; Value Buffer Size In Bytes
-;dw $00000004 ; 1 bit (MSB) Request/Response Indicator (0=Request, 1=Response), 31 bits (LSB) Value Length In Bytes
-;dw 1 ; Value Buffer (1 = Enable)
+dw Set_Palette
+dw $00000010
+dw $00000010
+dw 0
+dw 2
+dw $00000000, $FFFFFFFF
 
 dw Allocate_Buffer
 dw $00000008
