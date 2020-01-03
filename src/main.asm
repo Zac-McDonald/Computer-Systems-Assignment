@@ -14,13 +14,6 @@ include "constants.asm"
 org $0000
 mov sp, $8000				; Initialise the stack pointer
 
-; Begin copied CPU CORE CODE
-; Return CPU ID (0..3) Of The CPU Executed On
-mrc p15,0,r0,c0,c0,5 ; R0 = Multiprocessor Affinity Register (MPIDR)
-ands r0,3 ; R0 = CPU ID (Bits 0..1)
-bne end_of_program ; IF (CPU ID != 0) Branch To Infinite Loop (Core ID 1..3)
-; End
-
 mov r0, BASE_ADDRESS
 bl GPIO_Setup				; Setup GPIO pins for relavent inputs and outputs
 
